@@ -13,5 +13,5 @@ source lib.fish
 argparse h/help -- $argv
 
 if set -ql _flag_help
-  exit_usage
+  exit_usage (basename (status filename))
 end

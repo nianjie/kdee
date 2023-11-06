@@ -1,5 +1,5 @@
 function exit_usage
-  set command_name (basename (status filename))
+  set command_name $argv[1]
   echo "
   kubdee Version: v$kubdee_version
   Usage:
