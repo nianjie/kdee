@@ -1,3 +1,7 @@
+# Global constants
+set incus_status_code_running 103
+set incus_driver_version (incus info | awk '/[:space:]*driver_version/ {print $2}')
+
 function exit_usage
   set command_name $argv[1]
   echo "
@@ -81,15 +85,33 @@ function create_storage_pool
   end
 end
 
+function container_status_code
+  set -l container_name $argv[1]
+  incus list --format json | jq -r ".[] | select(.name == \"$container_name\").state.status_code"
+end
+
+function container_ip4_address
+  set -l container_name $argv[1]
+  incus list --format json | jq -r ".[] | select(.name == \"$container_name\").state.network.eth0.addresses[] | select(.family == \"inet\").address"
+end
+
 function container_wait_running
-  echo $argv
+  set -l container_name $argv[1]
+  while test (container_status_code $container_name) != "$incus_status_code_running"
+    log_info "Waiting for $container_name to reach state running ..."
+    sleep 3
+  end
+  while test -z (container_ip4_address $container_name)
+    log_info "Waiting for $container_name to get IPv4 address ..."
+    sleep 3
+  end
 end
 
 function prepare_container_image
   set -l cluster_name $argv[1]
   log_info "Pruning old kubdee container images ..."
   for c in (incus image list --format json | jq -r '.[].aliases[].name');
-    if string match -q -e "kubdee-container-image-" $c;! and string match -q $kubdee_container_image $c ;
+    if string match -q -e "kubdee-container-image-" $c;! and test "$kubdee_container_image" = "$c"
       incus image delete "$c"
     end
   end
