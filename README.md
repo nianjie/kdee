@@ -4,6 +4,7 @@ A tool to setup multi-nodes k8s clusters on [linux containers](https://linuxcont
 ## Requirements
 * [incus](https://github.com/lxc/incus)
 * [fish](https://github.com/fish-shell/fish-shell)
+* [jq](https://stedolan.github.io/jq/)
 * kubectl
 
 ## Installation
