@@ -71,9 +71,14 @@ function validate_name
   echo $name
 end
 
-function prepare_cluster_dir
-  set -l cluster_name (validate_name $argv[1])
-  mkdir -p $kubdee_dir/clusters/$cluster_name
+function create_storage_pool
+  set -l cluster_name $argv[1]
+  set -l driver $argv[2]
+  test -z $driver; and set driver dir
+  if ! incus storage show $cluster_name &>/dev/null
+    log_info "Creating new storage pool for kubdee ..."
+    incus storage create $cluster_name $driver
+  end
 end
 
 function container_wait_running
