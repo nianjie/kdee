@@ -1,0 +1,10 @@
+#!/usr/bin/env fish
+
+set kubdee_dir $HOME/.local/share/kubdee
+set kubdee_versoin (git describe --tags --always --dirty)
+set kubdee_base_image "images:ubuntu/jammy/cloud"
+set kubdee_container_image "kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)"
+set incus_status_code_running 103
+set incus_driver_version "(lxc info | awk '/[:space:]*driver_version/ {print $2}')"
+
+set 
