@@ -3,6 +3,7 @@
 # Global constants
 set kubdee_dir $HOME/.local/share/kubdee
 set kubdee_version (git describe --tags --always --dirty)
+set kubdee_version dev
 set kubdee_base_image images:ubuntu/jammy/cloud
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 set incus_status_code_running 103
@@ -27,6 +28,12 @@ function cmd_create
 end
 
 function cmd_start
+  set -l cluster_name $argv[1]
+  test -z $cluster_name; and set cluster_name kubdee
+  set cluster_name (validate_name $cluster_name)
+  test -d $kubdee_dir/clusters/$cluster_name
+  or exit_error "Found no cluster with name: $cluster_name - did you create it?" 1
+  log_info "Starting cluster $cluster_name ..."
   launch_container $cluster_name kubdee-$cluster_name-controller
   set -l worker_suffixes
   for i in (seq $num_worker);
@@ -41,6 +48,20 @@ function cmd_start
   end
 end
 
+function cmd_delete
+  set -l cluster_name $argv[1]
+  set cluster_name (validate_name $cluster_name)
+  test -d $kubdee_dir/clusters/$cluster_name
+  or exit_error "Found no cluster with name: $cluster_name" 1
+  log_info "Deleting cluster $cluster_name ..."
+  for c in (incus list --format json | jq -r '.[].name')
+    if string match -q -e "kubdee-$cluster_name-" $c
+      incus delete -f "$c"
+    end
+  end
+  rm -rf $kubdee_dir/clusters/$cluster_name
+end
+
 function main
   argparse h/help -- $argv
 
@@ -49,7 +70,7 @@ function main
   end
 
   set -l cmd $argv[1]
-  if contains "$cmd" create start start-worker smoke-test list controler-ip
+  if contains "$cmd" create start start-worker smoke-test list controler-ip delete
     cmd_$cmd $argv[2..]
   else if test "$cmd" = up
     cmd_create $argv[2..]

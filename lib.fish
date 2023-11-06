@@ -89,7 +89,7 @@ function prepare_container_image
   set -l cluster_name $argv[1]
   log_info "Pruning old kubdee container images ..."
   for c in (incus image list --format json | jq -r '.[].aliases[].name');
-    if string match -q -e "kubdee-container-image-" $c; and string match -q $kubdee_container_image $c ;
+    if string match -q -e "kubdee-container-image-" $c;! and string match -q $kubdee_container_image $c ;
       incus image delete "$c"
     end
   end
@@ -117,7 +117,14 @@ rm -rf /var/cache/apt
 end
 
 function launch_container 
-  echo $argv
+  set -l cluster_name $argv[1]
+  set -l container_name $argv[2]
+  incus info $container_name &>/dev/null ; and return
+  incus launch \
+    --storage kubdee \
+    --profile default \
+    --profile k3s \
+    $kubdee_container_image $container_name
 end
 
 function configure_controller
