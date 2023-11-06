@@ -111,7 +111,8 @@ function prepare_container_image
   set -l cluster_name $argv[1]
   log_info "Pruning old kubdee container images ..."
   for c in (incus image list --format json | jq -r '.[].aliases[].name');
-    if string match -q -e "kubdee-container-image-" $c;! and test "$kubdee_container_image" = "$c"
+    if string match -q -e "kubdee-container-image-" $c 
+      and ! test "$kubdee_container_image" = "$c"
       incus image delete "$c"
     end
   end
