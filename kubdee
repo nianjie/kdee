@@ -11,19 +11,14 @@ set incus_driver_version (incus info | awk '/[:space:]*driver_version/ {print $2
 # Option defaults
 set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set k3s_version v1.28.3+k3s1
-set cluster_name kubdee
 set num_worker 2
 
 source lib.fish
 
 function cmd_create
   breakpoint
-  set -l cluster_name (if test -z "$argv[1]" 
-      echo kubdee
-    else
-      echo $argv[1]
-    end
-  )
+  set -l cluster_name $argv[1]
+  test -z $cluster_name; and set cluster_name kubdee
   set cluster_name (validate_name $cluster_name)
   test -d $kubdee_dir/clusters/$cluster_name
   and exit_error "Found existing cluster with name: $cluster_name" 1
