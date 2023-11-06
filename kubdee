@@ -8,10 +8,32 @@ set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -
 set incus_status_code_running 103
 set incus_driver_version (incus info | awk '/[:space:]*driver_version/ {print $2}')
 
+# Option defaults
+set kubdee_dir "$kubdee_dir:-$HOME/.local/share/kubdee"
+set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
+set k3s_version v1.28.3+k3s1
+set cluster_name kubdee
+set num_worker 2
+
 source lib.fish
 
 argparse h/help -- $argv
 
 if set -ql _flag_help
   exit_usage (basename (status filename))
+end
+
+prepare_container_image $cluster_name
+
+launch_container $cluster_name kubdee-$cluster_name-controller
+set worker_suffixes
+for i in (seq $num_worker);
+  set -a worker_suffixes (tr -cd 'a-z0-9' </dev/urandom | head -c 6 || true)
+end
+for i in (seq $num_worker);
+  launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
+end
+configure_controller $cluster_name kubdee-$cluster_name-controller $admission_plugins
+for i in (seq $num_worker);
+  configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
 end

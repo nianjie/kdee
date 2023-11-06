@@ -27,4 +27,19 @@ function exit_usage
   "
     exit 0
   end
-  
+
+function prepare_container_image
+  echo $argv
+end
+
+function launch_container 
+  echo $argv
+end
+
+function configure_controller
+  echo $argv
+end
+
+function configure_worker
+  echo $argv
+end
