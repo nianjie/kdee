@@ -1,0 +1,9 @@
+name: vendor data
+description: provide clout-init vendor data profile
+config:
+  cloud-init.vendor-data: |
+    #cloud-config
+    package_upgrade: true
+    packages:
+      - curl
+      - fish

@@ -1,0 +1,9 @@
+name: user data
+description: provide clout-init user data profile
+config:
+  cloud-init.user-data: |
+    #cloud-config
+    runcmd:
+      - "curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644"
+      - "mkdir -p /root/.config/fish/completions/"
+      - "kubectl completion fish > /root/.config/fish/completions/kubectl.fish"

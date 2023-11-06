@@ -1,0 +1,4 @@
+name: k3s-nf_conntrack_max
+description: k3s patch profile
+config: 
+  linux.sysctl.net/netfilter/nf_conntrack_max: 131072

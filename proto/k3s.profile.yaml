@@ -1,0 +1,14 @@
+name: k3s
+description: k3s profile
+config: 
+  security.privileged: "true"
+  raw.lxc: "lxc.apparmor.profile=unconfined\nlxc.cap.drop= \nlxc.cgroup.devices.allow=a\nlxc.mount.auto=proc:rw sys:rw\n"
+# Mount the host /dev/kmsg device into the container to allow
+# kubelet's OOM manager to do its job. Otherwise we encounter the
+# following error:
+# `Failed to start OOM watcher open /dev/kmsg: no such file or directory`
+devices:
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char

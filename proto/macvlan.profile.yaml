@@ -1,0 +1,9 @@
+# https://blog.simos.info/how-to-make-your-lxd-container-get-ip-addresses-from-your-lan/
+name: macvlan
+description: macvlan network profile
+config: 
+devices:
+  eth0:
+    nictype: macvlan
+    parent: ens3
+    type: nic

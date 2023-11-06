@@ -1,0 +1,10 @@
+name: user data
+description: provide clout-init user data profile
+config:
+  cloud-init.user-data: |
+    #cloud-config
+devices:
+  binary-k3s:
+    source: /home/ubuntu/assets/containers/test/rootfs/usr/local/bin/k3s
+    path: /usr/local/bin/k3s
+    type: disk

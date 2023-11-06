@@ -1,0 +1,4 @@
+name: delete-protection
+description: instance delete protection profile
+config: 
+  security.protection.delete: true
