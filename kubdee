@@ -17,23 +17,43 @@ set num_worker 2
 
 source lib.fish
 
-argparse h/help -- $argv
-
-if set -ql _flag_help
-  exit_usage (basename (status filename))
+function cmd_create
+  prepare_container_image $cluster_name
 end
 
-prepare_container_image $cluster_name
+function cmd_start
+  launch_container $cluster_name kubdee-$cluster_name-controller
+  set -l worker_suffixes
+  for i in (seq $num_worker);
+    set -a worker_suffixes (tr -cd 'a-z0-9' </dev/urandom | head -c 6 || true)
+  end
+  for i in (seq $num_worker);
+    launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
+  end
+  configure_controller $cluster_name kubdee-$cluster_name-controller $admission_plugins
+  for i in (seq $num_worker);
+    configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
+  end
+end
 
-launch_container $cluster_name kubdee-$cluster_name-controller
-set worker_suffixes
-for i in (seq $num_worker);
-  set -a worker_suffixes (tr -cd 'a-z0-9' </dev/urandom | head -c 6 || true)
+function main
+  argparse h/help -- $argv
+
+  if set -ql _flag_help
+    exit_usage (basename (status filename))
+  end
+
+  set -l cmd $argv[1]
+  if contains $cmd create start start-worker smoke-test list controler-ip ;
+    cmd_$cmd $argv[2..]
+  else if test $cmd = up ;
+    cmd_create $argv[2..]
+    cmd_start $argv[2..]
+  else
+    echo "Unknown command: $cmd" >&2
+    echo "See \`kubedee help\` for help" >&2
+    exit 1
+  end
 end
-for i in (seq $num_worker);
-  launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
-end
-configure_controller $cluster_name kubdee-$cluster_name-controller $admission_plugins
-for i in (seq $num_worker);
-  configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
-end
+
+main $argv
