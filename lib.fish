@@ -52,7 +52,28 @@ function exit_error
   set message $argv[1]
   set code $argv[2]
   log_error "$message"
-  exit code
+  exit $code
+end
+
+function validate_name
+  set -l orig_name $argv[1]
+  # We must be fairly strict about names, since they are used
+  # for container's hostname
+  if ! echo "$orig_name" | grep -qE '^[[:alnum:]_.-]{1,50}$'
+    exit_error "Invalid name (only '[[:alnum:]-]{1,50}' allowed): $orig_name" 1
+  end
+  # Do some normalization to allow input like 'v1.8.4' while
+  # matching host name requirements
+  set -l name (string replace -a -r [._] - $orig_name)
+  if test "$orig_name" != "$name"
+    log_warn "Normalized name '$orig_name' -> '$name'"
+  end
+  echo $name
+end
+
+function prepare_cluster_dir
+  set -l cluster_name (validate_name $argv[1])
+  mkdir -p $kubdee_dir/clusters/$cluster_name
 end
 
 function container_wait_running
