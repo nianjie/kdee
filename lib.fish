@@ -59,6 +59,22 @@ function exit_error
   exit $code
 end
 
+function cd_or_exit_error
+  set -l target $argv[1]
+  cd "$target" ; or exit_error "Failed to cd to $target"  
+end
+
+function copyl_or_exit_error
+  set -l target $argv[1]
+  for f in $argv[2..]
+    if ! cp -l "$f" "$target" &>/dev/null
+      if ! cp "$f" "$target" &>/dev/null
+        exit_error "Failed to copy '$f' to '$target'" 1
+      end
+    end
+  end
+end
+
 function validate_name
   set -l orig_name $argv[1]
   # We must be fairly strict about names, since they are used
@@ -83,6 +99,30 @@ function create_storage_pool
     log_info "Creating new storage pool for kubdee ..."
     incus storage create $cluster_name $driver
   end
+end
+
+function fetch_k3s
+  set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
+  mkdir -p $cache_dir
+  test -e $cache_dir/k3s ; and return
+  begin
+    cd_or_exit_error $cache_dir
+    log_info "Fetching k3s $k3s_version ..."
+    if ! curl -fsSLI "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s" >/dev/null
+      exit_error "K3s version '$k3s_version' not found on https://github.com/k3s-io" 1
+    end
+    curl -fsSL -o k3s "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s"
+    chmod a+x k3s
+  end
+end
+
+function fetch_k3s_binaries
+  set -l cluster_name $argv[1]
+  fetch_k3s
+  set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
+  set -l target_dir $kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin
+  mkdir -p $target_dir
+  copyl_or_exit_error $target_dir $cache_dir/k3s
 end
 
 function container_status_code
@@ -151,9 +191,17 @@ function launch_container
 end
 
 function configure_controller
-  echo $argv
+  set -l cluster_name $argv[1]
+  set -l container_name $argv[2]
+  container_wait_running $container_name
+  echo "
+  curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644
+  " | incus exec $container_name -- bash
 end
 
 function configure_worker
-  echo $argv
+  set -l cluster_name $argv[1]
+  set -l container_name $argv[2]
+  container_wait_running $container_name
+  incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
 end
