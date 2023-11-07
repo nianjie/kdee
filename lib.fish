@@ -206,8 +206,10 @@ function configure_worker
   incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
   set -l controller_name kubdee-$cluster_name-controller
   set -l token (incus exec $controller_name -- cat /var/lib/rancher/k3s/server/node-token)
-  or log_error "k3s server token not found on $controller_name. Dose the server run?"
+  or exit_error "k3s server token not found on $controller_name. Dose the server run?" 1
   set -l server_ip4 (container_ip4_address $controller_name)
-  set -l agent_result (incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &)
-  or log_error "k3s agent faild to start on $container_name. Error: $agent_result"
+  begin
+      incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &
+  end &>/dev/null
+  or exit_error "Faild to start k3s agent on $container_name. " 1
 end
