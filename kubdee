@@ -14,6 +14,29 @@ set num_worker 2
 
 source lib.fish
 
+function exit_usage
+  set command_name $argv[1]
+  echo "
+  kubdee Version: $kubdee_version
+  Usage:
+    $command_name [options] controller-ip <cluster name>     print the IPv4 address of the controller node
+    $command_name [options] create <cluster name>            create a cluster
+    $command_name [options] delete <cluster name>            delete a cluster
+    $command_name [options] list                             list all clusters
+    $command_name [options] smoke-test <cluster name>        smoke test a cluster
+    $command_name [options] start <cluster name>             start a cluster
+    $command_name [options] start-worker <cluster name>      start a new worker node in a cluster
+    $command_name [options] up <cluster name>                create + start in one command
+    $command_name [options] version                          print kubdee version and exit
+  
+  Options:
+    --k3s-version <version>                           the release of K3s to install, for example 'v1.28.3+k3s1'
+    --num-worker <num>                                number of worker nodes to start (default: 2)
+    --help                                            print this information
+  "
+    exit 0
+end
+
 function cmd_create
   set -l cluster_name $argv[1]
   test -z $cluster_name; and set cluster_name kubdee
@@ -67,6 +90,12 @@ function cmd_smoke-test
   echo Not Implemented.
 end
 
+function cmd_version
+  echo kubdee version: $kubdee_version
+  echo K3s version: $k3s_version
+  echo incus version: $incus_driver_version
+end
+
 function cmd_list
   mkdir -p "$kubdee_dir/clusters/"
   find "$kubdee_dir/clusters/" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
@@ -97,21 +126,34 @@ function cmd_delete
 end
 
 function main
-  argparse h/help -- $argv
+  argparse h/help k/k3s-version= n/num-worker= -- $argv
+  or begin
+      echo "See `kubdee --help` for help" >&2
+      exit 1
+  end
 
   if set -ql _flag_help
     exit_usage (basename (status filename))
   end
-
+  
+  if set -ql _flag_k3s_version
+    set k3s_version $_flag_k3s_version
+  end
+  
+  if set -ql _flag_num_worker
+    test $_flag_num_worker -ge 0 ; or exit_error "Number of worker nodes must be a positive integer: $_flag_num_worker"
+    set num_worker $_flag_num_worker
+  end
+  
   set -l cmd $argv[1]
-  if contains "$cmd" create start start-worker smoke-test list controller-ip delete
+  if contains "$cmd" create start start-worker smoke-test list controller-ip delete version
     cmd_$cmd $argv[2..]
   else if test "$cmd" = up
     cmd_create $argv[2..]
     cmd_start $argv[2..]
   else
     echo "Unknown command: $cmd" >&2
-    echo "See \`kubedee help\` for help" >&2
+    echo "See `kubdee --help` for help" >&2
     exit 1
   end
 end
