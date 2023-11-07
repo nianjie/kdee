@@ -156,8 +156,15 @@ function launch_container
   incus launch \
     --storage kubdee \
     --profile default \
-    --profile k3s \
+    --config security.privileged="true" \
+    --config raw.lxc="
+lxc.apparmor.profile=unconfined
+lxc.mount.auto=proc:rw sys:rw cgroup:rw
+lxc.cgroup.devices.allow=a
+lxc.cap.drop=
+" \
     $kubdee_container_image $container_name
+  incus config device add $container_name kmsg unix-char source=/dev/kmsg path=/dev/kmsg
 end
 
 function configure_controller
