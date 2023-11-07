@@ -101,7 +101,7 @@ function container_status_code
   incus list --format json | jq -r ".[] | select(.name == \"$container_name\").state.status_code"
 end
 
-function container_ip4_address
+function container_ipv4_address
   set -l container_name $argv[1]
   incus list --format json | jq -r ".[] | select(.name == \"$container_name\").state.network.eth0.addresses[] | select(.family == \"inet\").address"
 end
@@ -112,7 +112,7 @@ function container_wait_running
     log_info "Waiting for $container_name to reach state running ..."
     sleep 3
   end
-  while test -z (container_ip4_address $container_name)
+  while test -z (container_ipv4_address $container_name)
     log_info "Waiting for $container_name to get IPv4 address ..."
     sleep 3
   end
@@ -189,9 +189,27 @@ function configure_worker
   set -l controller_name kubdee-$cluster_name-controller
   set -l token (incus exec $controller_name -- cat /var/lib/rancher/k3s/server/node-token)
   or exit_error "k3s server token not found on $controller_name. Dose the server run?" 1
-  set -l server_ip4 (container_ip4_address $controller_name)
+  set -l server_ip4 (container_ipv4_address $controller_name)
   begin
       incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &
   end &>/dev/null
   or exit_error "Faild to start k3s agent on $container_name. " 1
+end
+
+function configure_kubeconfig
+  set -l cluster_name $argv[1]
+  set -l cluster_context_name kubdee-$cluster_name
+  set -l cluster_creds_name "$cluster_context_name-admin"
+  set -l ip (container_ipv4_address kubdee-$cluster_name-controller)
+  test -z $ip && exit_error "Failed to get IPv4 for kubdee-$cluster_name-controller"
+  kubectl config set-cluster "$cluster_context_name" \
+    --certificate-authority="$kubdee_dir/clusters/$cluster_name/certificates/ca.pem" \
+    --server="https://$ip:6443"
+  kubectl config set-credentials "$cluster_creds_name" \
+    --client-certificate="$kubdee_dir/clusters/$cluster_name/certificates/admin.pem" \
+    --client-key="$kubdee_dir/clusters/$cluster_name/certificates/admin-key.pem"
+  kubectl config set-context "$cluster_context_name" \
+    --cluster="$cluster_context_name" \
+    --user="$cluster_creds_name"
+  kubectl config use-context "$cluster_context_name"
 end
