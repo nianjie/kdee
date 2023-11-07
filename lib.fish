@@ -164,9 +164,11 @@ function configure_controller
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
   container_wait_running $container_name
-  echo "
-  curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644
-  " | incus exec $container_name -- bash
+  begin
+      echo "
+      curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644
+      " | incus exec $container_name -- bash
+  end &>/dev/null
 end
 
 function configure_worker
