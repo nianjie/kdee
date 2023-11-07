@@ -1,5 +1,5 @@
-* kdee
-A tool to setup multi-nodes k8s clusters on [linux containers](https://linuxcontainers.org/) on a single machine or vm.
+# kubdee
+#### A tool to setup multi-nodes k8s clusters on [linux containers](https://linuxcontainers.org/) on a single machine or vm.
 
 ## Requirements
 * [incus](https://github.com/lxc/incus)
@@ -11,3 +11,7 @@ A tool to setup multi-nodes k8s clusters on [linux containers](https://linuxcont
 
 
 ## Usage
+
+
+## Release Notes
+* v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
