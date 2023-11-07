@@ -4,11 +4,10 @@
 set kubdee_dir $HOME/.local/share/kubdee
 set kubdee_version (git describe --tags --always --dirty)
 set kubdee_version dev
-set kubdee_base_image images:ubuntu/jammy/cloud
+set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 
 # Option defaults
-set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set k3s_version v1.28.3+k3s1
 set num_worker 2
 

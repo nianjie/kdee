@@ -1,4 +1,5 @@
 # Global constants
+set kubdee_base_image images:ubuntu/jammy
 set incus_status_code_running 103
 set incus_driver_version (incus info | awk '/[:space:]*driver_version/ {print $2}')
 
@@ -134,7 +135,8 @@ function prepare_container_image
     --profile default \
     $kubdee_base_image $kubdee_container_image-setup
   container_wait_running $kubdee_container_image-setup
-  echo "
+  begin
+    echo "
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
@@ -143,10 +145,11 @@ apt-get update
 apt-get install -y curl
 
 rm -rf /var/cache/apt
-" | incus exec $kubdee_container_image-setup -- bash
-  incus snapshot create $kubdee_container_image-setup snap
-  incus publish $kubdee_container_image-setup/snap --alias $kubdee_container_image
-  incus delete -f $kubdee_container_image-setup
+  " | incus exec $kubdee_container_image-setup -- bash
+    incus snapshot create $kubdee_container_image-setup snap
+    incus publish $kubdee_container_image-setup/snap --alias $kubdee_container_image
+    incus delete -f $kubdee_container_image-setup
+  end &>/dev/null
 end
 
 function launch_container 
