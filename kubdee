@@ -45,6 +45,7 @@ function cmd_start
   for i in (seq $num_worker);
     configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
   end
+  log_info "Started cluster $cluster_name."
 end
 
 function cmd_delete

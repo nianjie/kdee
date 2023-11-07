@@ -208,6 +208,6 @@ function configure_worker
   set -l token (incus exec $controller_name -- cat /var/lib/rancher/k3s/server/node-token)
   or log_error "k3s server token not found on $controller_name. Dose the server run?"
   set -l server_ip4 (container_ip4_address $controller_name)
-  set -l agent_result (incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token)
+  set -l agent_result (incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &)
   or log_error "k3s agent faild to start on $container_name. Error: $agent_result"
 end
