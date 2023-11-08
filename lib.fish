@@ -196,18 +196,27 @@ function configure_worker
   or exit_error "Faild to start k3s agent on $container_name. " 1
 end
 
+function fetch_k3s_certificate
+  set -l cluster_name $argv[1]
+  set -l source_dir kubdee-$cluster_name-controller//var/lib/rancher/k3s/server/tls
+  set -l target_dir $kubdee_dir/clusters/$cluster_name/certificates
+  incus file pull $source_dir/{server-ca.crt, client-admin.crt, client-admin.key} $target_dir/
+  or exit_error "Faild to fetch k3s certificate from cluster: $cluster_name."
+end
+
 function configure_kubeconfig
   set -l cluster_name $argv[1]
   set -l cluster_context_name kubdee-$cluster_name
   set -l cluster_creds_name "$cluster_context_name-admin"
   set -l ip (container_ipv4_address kubdee-$cluster_name-controller)
   test -z $ip && exit_error "Failed to get IPv4 for kubdee-$cluster_name-controller"
+  fetch_k3s_certificate $cluster_name 
   kubectl config set-cluster "$cluster_context_name" \
-    --certificate-authority="$kubdee_dir/clusters/$cluster_name/certificates/ca.pem" \
+    --certificate-authority="$kubdee_dir/clusters/$cluster_name/certificates/server-ca.crt" \
     --server="https://$ip:6443"
   kubectl config set-credentials "$cluster_creds_name" \
-    --client-certificate="$kubdee_dir/clusters/$cluster_name/certificates/admin.pem" \
-    --client-key="$kubdee_dir/clusters/$cluster_name/certificates/admin-key.pem"
+    --client-certificate="$kubdee_dir/clusters/$cluster_name/certificates/client-admin.crt" \
+    --client-key="$kubdee_dir/clusters/$cluster_name/certificates/client-admin.key"
   kubectl config set-context "$cluster_context_name" \
     --cluster="$cluster_context_name" \
     --user="$cluster_creds_name"
