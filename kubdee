@@ -111,7 +111,7 @@ function cmd_controller-ip
   test -d $kubdee_dir/clusters/$cluster_name
   or exit_error "Found no cluster with name: $cluster_name - did you create it?" 1
   set -l container_name kubdee-$cluster_name-controller
-  container_ip4_address $container_name
+  container_ipv4_address $container_name
 end
 
 function cmd_delete
