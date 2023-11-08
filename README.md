@@ -16,3 +16,4 @@
 ## Release Notes
 * v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
 * v0.2 - Improved process of containers configuration required for running k8s by converting profile-applying into config-options-applying at launching phase.
+* v0.3 - Implemented integration of kubeconfig configuration feature, with it you can access with kubectl outside the cluster.
