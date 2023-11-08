@@ -10,6 +10,7 @@ set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -
 # Option defaults
 set k3s_version v1.28.3+k3s1
 set num_worker 2
+set no_set_context false
 
 source lib.fish
 
@@ -31,6 +32,7 @@ function exit_usage
   Options:
     --k3s-version <version>                           the release of K3s to install, for example 'v1.28.3+k3s1'
     --num-worker <num>                                number of worker nodes to start (default: 2)
+    --no-set-context                                  prevent curent `.kube/config` from being replaced
     --help                                            print this information
   "
     exit 0
@@ -69,6 +71,8 @@ function cmd_start
   for i in (seq $num_worker);
     configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
   end
+  test $no_set_context = false 
+  and configure_kubeconfig $cluster_name
   log_success "Cluster $cluster_name started."
 end
 
@@ -125,7 +129,7 @@ function cmd_delete
 end
 
 function main
-  argparse h/help k/k3s-version= n/num-worker= -- $argv
+  argparse h/help k/k3s-version= n/num-worker= u-no-set-context -- $argv
   or begin
       echo "See `kubdee --help` for help" >&2
       exit 1
@@ -137,6 +141,10 @@ function main
   
   if set -ql _flag_k3s_version
     set k3s_version $_flag_k3s_version
+  end
+  
+  if set -ql _flag_no_set_context
+    set no_set_context true
   end
   
   if set -ql _flag_num_worker
