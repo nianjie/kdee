@@ -167,7 +167,11 @@ lxc.cgroup.devices.allow=a
 lxc.cap.drop=
 " \
     $kubdee_container_image $container_name
-  incus config device add $container_name kmsg unix-char source=/dev/kmsg path=/dev/kmsg
+  begin
+    incus config device add $container_name kmsg unix-char source=/dev/kmsg path=/dev/kmsg
+    incus config device add $container_name adisable1 disk source=/proc/sys/net/netfilter/nf_conntrack_max path=/proc/sys/net/netfilter/nf_conntrack_max
+    incus config device add $container_name adisable2 disk source=/sys/bus/acpi/drivers/hardware_error_device/uevent path=/sys/bus/acpi/drivers/hardware_error_device/uevent
+  end &>/dev/null
 end
 
 function configure_controller
@@ -185,7 +189,9 @@ function configure_worker
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
   container_wait_running $container_name
-  incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
+  begin
+    incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
+  end &> /dev/null
   set -l controller_name kubdee-$cluster_name-controller
   set -l token (incus exec $controller_name -- cat /var/lib/rancher/k3s/server/node-token)
   or exit_error "k3s server token not found on $controller_name. Dose the server run?" 1
