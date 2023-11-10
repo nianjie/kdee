@@ -17,3 +17,5 @@
 * v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
 * v0.2 - Improved process of containers configuration required for running k8s by converting profile-applying into config-options-applying at launching phase.
 * v0.3 - Implemented integration of kubeconfig configuration feature, with it you can access with kubectl outside the cluster.
+* v0.4 - Implemented feature of automation of importing local container images. 
+  * If any container images exported from repository is prepared in a custom volume named as `images-repo`, they are imported into k8s nodes automatically.
