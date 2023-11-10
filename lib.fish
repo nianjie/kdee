@@ -200,6 +200,14 @@ function configure_worker
   begin
       incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &
   end &>/dev/null
+  begin
+    # k3s_wait_running $container_name
+    set -l pool_source (incus storage list --format json |jq -r '.[] | select (.name == "kubdee").config.source' )
+    set -l tars $pool_source/custom/default_images-repo/*.tar #as a prefix with volume name(images-repo) in the path, default comes from project name : default.
+    set --show tars
+    incus exec $container_name -- k3s ctr 
+    and incus exec $container_name -- k3s ctr image import $tars
+  end 
   or exit_error "Faild to start k3s agent on $container_name. " 1
 end
 
