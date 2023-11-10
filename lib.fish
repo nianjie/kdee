@@ -171,7 +171,7 @@ lxc.cap.drop=
     incus config device add $container_name kmsg unix-char source=/dev/kmsg path=/dev/kmsg
     incus config device add $container_name adisable1 disk source=/proc/sys/net/netfilter/nf_conntrack_max path=/proc/sys/net/netfilter/nf_conntrack_max
     incus config device add $container_name adisable2 disk source=/sys/bus/acpi/drivers/hardware_error_device/uevent path=/sys/bus/acpi/drivers/hardware_error_device/uevent
-    incus storage volume attach kubdee images-repo $container_name /data # volume images-repo needs to be prepared at first.
+    incus storage volume attach $cluster_name images-repo $container_name /data # volume images-repo needs to be prepared at first.
   end &>/dev/null
 end
 
