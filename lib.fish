@@ -191,7 +191,7 @@ function configure_controller
   container_wait_running $container_name
   begin
       echo "
-      curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644
+      curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --write-kubeconfig-mode 644
       " | incus exec $container_name -- bash
   end &>/dev/null
   or exit_error "Faild to start k3s server on $container_name. " 1
