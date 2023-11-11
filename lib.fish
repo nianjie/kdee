@@ -175,6 +175,16 @@ lxc.cap.drop=
   end &>/dev/null
 end
 
+function import_local_images
+  set -l container_name $argv[1]
+  begin
+    set tars (incus exec $container_name -- sh -c 'ls /data/*.tar')
+    for t in $tars
+      incus exec $container_name -- k3s ctr image import $t
+    end
+  end &>/dev/null
+end
+
 function configure_controller
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
@@ -184,6 +194,8 @@ function configure_controller
       curl -sfL https://get.k3s.io | sh -s - server --disable servicelb --disable traefik --write-kubeconfig-mode 644
       " | incus exec $container_name -- bash
   end &>/dev/null
+  or exit_error "Faild to start k3s server on $container_name. " 1
+  import_local_images $container_name
 end
 
 function configure_worker
@@ -201,12 +213,7 @@ function configure_worker
       incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &
   end &>/dev/null
   or exit_error "Faild to start k3s agent on $container_name. " 1
-  begin
-    set tars (incus exec $container_name -- sh -c 'ls /data/*.tar')
-    for t in $tars
-      incus exec $container_name -- k3s ctr image import $t
-    end
-  end &>/dev/null
+  import_local_images $container_name
 end
 
 function fetch_k3s_certificate
