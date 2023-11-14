@@ -88,9 +88,11 @@ function fetch_k3s
 end
 
 function fetch_k3s_binaries
-  set -l cluster_name $argv[1]
-  fetch_k3s
   set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
+  set -l cluster_name $argv[1]
+  set -l local_k3s_binary $argv[2]
+  test -n $local_k3s_binary ; and copyl_or_exit_error $cache_dir $local_k3s_binary
+  fetch_k3s
   set -l target_dir $kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin
   mkdir -p $target_dir
   copyl_or_exit_error $target_dir $cache_dir/k3s
