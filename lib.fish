@@ -118,6 +118,16 @@ function container_wait_running
   end
 end
 
+function controller_wait_running
+  set -l container_name $argv[1]
+  while true
+    incus exec $container_name -- k3s kubectl get nodes 2>/dev/null | fgrep -iq ready
+    and break
+    log_info "Waiting for $container_name to reach state Ready ..."
+    sleep 3
+  end
+end
+
 function prepare_container_image
   set -l cluster_name $argv[1]
   log_info "Pruning old kubdee container images ..."
@@ -190,11 +200,14 @@ function configure_controller
   set -l container_name $argv[2]
   container_wait_running $container_name
   begin
-      echo "
-      curl -sfL https://get.k3s.io | sh -s - server --write-kubeconfig-mode 644
-      " | incus exec $container_name -- bash
-  end &>/dev/null
+    incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
+    echo "
+    chmod a+x /usr/local/bin/k3s
+    k3s server --write-kubeconfig-mode 644 &
+    " | incus exec $container_name -- bash
+  end
   or exit_error "Faild to start k3s server on $container_name. " 1
+  controller_wait_running $container_name
   import_local_images $container_name
 end
 
