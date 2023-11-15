@@ -62,7 +62,7 @@ function cmd_start
   launch_container $cluster_name kubdee-$cluster_name-controller
   set -l worker_suffixes
   for i in (seq $num_worker);
-    set -a worker_suffixes (tr -cd 'a-z0-9' </dev/urandom | head -c 6 || true)
+    set -a worker_suffixes (openssl rand -base64 10 | tr -cd 'a-z0-9' | head -c 6 || true)
   end
   for i in (seq $num_worker);
     launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
@@ -83,7 +83,7 @@ function cmd_start-worker
   test -d $kubdee_dir/clusters/$cluster_name
   or exit_error "Found no cluster with name: $cluster_name - did you create it?" 1
   prepare_container_image $cluster_name
-  set -l worker_suffixes (tr -cd 'a-z0-9' </dev/urandom | head -c 6 || true)
+  set -l worker_suffixes (openssl rand -base64 10 | tr -cd 'a-z0-9' | head -c 6 || true)
   launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes
   configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes
   log_success "Node kubdee-$cluster_name-worker-$worker_suffixes started."
