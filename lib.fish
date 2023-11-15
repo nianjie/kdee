@@ -204,6 +204,9 @@ function configure_controller
   begin
     incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
     incus exec $container_name -- chmod a+x /usr/local/bin/k3s
+    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/kubectl
+    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/ctr
+    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/crictl
     incus exec $container_name -- sh -ic 'k3s server --write-kubeconfig-mode 644 &' # -i force interactive mode, otherwise the process to start server is interrupted.
   end # &>/dev/null # fail to start k3s server if output are closed.
   or exit_error "Faild to start k3s server on $container_name. " 1
