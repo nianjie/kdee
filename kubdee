@@ -35,6 +35,7 @@ function exit_usage
     --num-worker <num>                                number of worker nodes to start (default: 2)
     --no-set-context                                  prevent curent `.kube/config` from being replaced
     --local-k3s-binary <path>                         install with specified k3s binary instead of fetching from internet (sort of offline)
+    --alpine-base                                     switch base image from ubuntu($base_image_ubuntu) to alpine($base_image_alpine)
     --help                                            print this information
   "
     exit 0
@@ -131,7 +132,7 @@ function cmd_delete
 end
 
 function main
-  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= -- $argv
+  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= a-alpine-base -- $argv
   or begin
       echo "See `kubdee --help` for help" >&2
       exit 1
@@ -157,6 +158,10 @@ function main
   if set -ql _flag_local_k3s_binary
     test -e $_flag_local_k3s_binary ; or exit_error "Specified local k3s binary not exist: $_flag_local_k3s_binary"
     set local_k3s_binary $_flag_local_k3s_binary
+  end
+
+  if set -ql _flag_alpine_base
+    
   end
 
   set -l cmd $argv[1]
