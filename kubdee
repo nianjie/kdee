@@ -35,7 +35,7 @@ function exit_usage
     --num-worker <num>                                number of worker nodes to start (default: 2)
     --no-set-context                                  prevent curent `.kube/config` from being replaced
     --local-k3s-binary <path>                         install with specified k3s binary instead of fetching from internet (sort of offline)
-    --image-base                                      specify base image. possible options are : "(string join ', ' $image_bases)". default is $image_bases[1].
+    --image-base                                      specify base image. possible options are : "(string join ', ' $image_bases)". default is `$image_bases[1]`.
     --help                                            print this information
   "
     exit 0
@@ -165,7 +165,7 @@ function main
     if contains $_flag_image_base $image_bases
       set image_base $_flag_image_base
     else
-      or log_error "Only following image bases are supported: $image_bases. The default($image_bases[1]) will be used."
+      log_error "Only following image bases are supported: "(string join ', ' $image_bases)". The default `$image_bases[1]` will be used."
     end
   end
   source lib-$image_base.fish
