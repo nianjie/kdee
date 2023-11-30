@@ -19,12 +19,14 @@ function configure_controller_impl
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
   begin
-    incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
-    incus exec $container_name -- chmod a+x /usr/local/bin/k3s
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/kubectl
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/ctr
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/crictl
-    incus exec $container_name -- sh -ic 'k3s server --write-kubeconfig-mode 644 &' # -i force interactive mode, otherwise the process to start server is interrupted.
+    set -l cgroup_path /sys/fs/cgroup
+    set -l processes (incus exec $container_name -- cat $cgroup_path/cgroup.procs )
+    test -z "$processes" ; and exit_error "Faild to configure control-plane node." 1
+    incus exec $container_name -- mkdir -p $cgroup_path/init.scope
+    and for p in $processes
+      incus exec $container_name -- sh -c "echo $p > $cgroup_path/init.scope/cgroup.procs"
+    end
+    and incus exec $container_name -- sh -c  "echo '+cpuset +cpu +io +memory +hugetlb +pids +rdma' >$cgroup_path/cgroup.subtree_control"
   end # &>/dev/null # fail to start k3s server if output are closed.
 end
 
