@@ -32,8 +32,10 @@ end
 function configure_controller_impl
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
-  configure_cgroup $argv[2]
-  incus exec $container_name -- sh -c 'rc-service k3s start'
+  begin
+    configure_cgroup $argv[2]
+    incus exec $container_name -- sh -c 'rc-service k3s start'
+   end &>/dev/null
 end
 
 function configure_worker_impl
