@@ -138,7 +138,7 @@ function prepare_container_image
       incus image delete "$c"
     end
   end
-  incus image info $kubdee_container_image &>/dev/null ; and return
+  incus image info $kubdee_container_image | fgrep -i $image_base &>/dev/null ; and return
   log_info "Preparing kubdee container image ..."
   incus delete -f $kubdee_container_image-setup &>/dev/null ; or true
   launch_container_image_setup $argv

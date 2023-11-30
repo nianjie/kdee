@@ -7,6 +7,7 @@ set kubdee_version dev
 set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 set image_bases ubuntu alpine
+set image_base $image_bases[1]
 # Option defaults
 set k3s_version v1.28.3+k3s1
 set num_worker 2
@@ -160,7 +161,6 @@ function main
     set local_k3s_binary $_flag_local_k3s_binary
   end
 
-  set -l image_base $image_bases[1]
   if set -ql _flag_image_base
     if contains $_flag_image_base $image_bases
       set image_base $_flag_image_base
