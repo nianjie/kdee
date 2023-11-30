@@ -15,9 +15,8 @@ function launch_container_image_setup
   end &>/dev/null
 end
 
-function configure_controller_impl
-  set -l cluster_name $argv[1]
-  set -l container_name $argv[2]
+function configure_cgroup
+  set -l container_name $argv[1]
   begin
     set -l cgroup_path /sys/fs/cgroup
     set -l processes (incus exec $container_name -- cat $cgroup_path/cgroup.procs )
@@ -27,7 +26,13 @@ function configure_controller_impl
       incus exec $container_name -- sh -c "echo $p > $cgroup_path/init.scope/cgroup.procs"
     end
     and incus exec $container_name -- sh -c  "echo '+cpuset +cpu +io +memory +hugetlb +pids +rdma' >$cgroup_path/cgroup.subtree_control"
-  end # &>/dev/null # fail to start k3s server if output are closed.
+  end
+end
+
+function configure_controller_impl
+  set -l cluster_name $argv[1]
+  set -l container_name $argv[2]
+  configure_cgroup $argv[2]
 end
 
 function configure_worker_impl
