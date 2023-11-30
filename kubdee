@@ -74,7 +74,7 @@ function cmd_start
   for i in (seq $num_worker);
     configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
   end
-  test $no_set_context = false 
+  test $no_set_context = false ;and which kubectl &>/dev/null
   and configure_kubeconfig $cluster_name
   log_success "Cluster $cluster_name started."
 end
