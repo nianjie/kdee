@@ -122,7 +122,7 @@ end
 function controller_wait_running
   set -l container_name $argv[1]
   while true
-    incus exec $container_name -- k3s kubectl get nodes 2>/dev/null | fgrep -iq ready
+    incus exec $container_name -- kubectl get nodes 2>/dev/null | fgrep -iq ready
     and break
     log_info "Waiting for $container_name to reach state Ready ..."
     sleep 3
