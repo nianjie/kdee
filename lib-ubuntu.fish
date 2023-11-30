@@ -1,5 +1,5 @@
 # Global constants
-set kubdee_base_image images:ubuntu/jammy
+set -g kubdee_base_image images:ubuntu/jammy #require explicit global option, as being sourced within a function(main) body.
 
 function launch_container_image_setup
   set -l cluster_name $argv[1]
