@@ -46,11 +46,11 @@ function configure_worker_impl
   begin
     configure_cgroup $container_name
     incus exec $container_name -- sh -c "echo '# k3s options
-export PATH=\"/usr/libexec/cni/;\$PATH\"
+export PATH=\"/usr/libexec/cni/:\$PATH\"
 K3S_EXEC=\"agent\"
 K3S_OPTS=\"--server https://$server_ip4:6443 --token $token \"
 ' > /etc/conf.d/k3s
 "
     incus exec $container_name -- rc-service k3s start
-  end #&>/dev/null
+  end &>/dev/null
 end
