@@ -139,6 +139,7 @@ function prepare_container_image
     end
   end
   incus image info $kubdee_container_image | fgrep -i $image_base &>/dev/null ; and return
+  incus image delete $kubdee_container_image #delete anyway as a new one has to be created.
   log_info "Preparing kubdee container image ..."
   incus delete -f $kubdee_container_image-setup &>/dev/null ; or true
   launch_container_image_setup $argv
