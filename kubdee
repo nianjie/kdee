@@ -6,7 +6,7 @@ set kubdee_version (git describe --tags --always --dirty)
 set kubdee_version dev
 set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
-
+set image_bases ubuntu alpine
 # Option defaults
 set k3s_version v1.28.3+k3s1
 set num_worker 2
@@ -35,7 +35,7 @@ function exit_usage
     --num-worker <num>                                number of worker nodes to start (default: 2)
     --no-set-context                                  prevent curent `.kube/config` from being replaced
     --local-k3s-binary <path>                         install with specified k3s binary instead of fetching from internet (sort of offline)
-    --alpine-base                                     switch base image from ubuntu($base_image_ubuntu) to alpine($base_image_alpine)
+    --image-base                                      specify base image. possible options are : "(string join ', ' $image_bases)". default is $image_bases[1].
     --help                                            print this information
   "
     exit 0
@@ -132,7 +132,7 @@ function cmd_delete
 end
 
 function main
-  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= a-alpine-base -- $argv
+  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= i/image-base= -- $argv
   or begin
       echo "See `kubdee --help` for help" >&2
       exit 1
@@ -160,9 +160,15 @@ function main
     set local_k3s_binary $_flag_local_k3s_binary
   end
 
-  if set -ql _flag_alpine_base
-    
+  set -l image_base $image_bases[1]
+  if set -ql _flag_image_base
+    if contains $_flag_image_base $image_bases
+      set image_base $_flag_image_base
+    else
+      or log_error "Only following image bases are supported: $image_bases. The default($image_bases[1]) will be used."
+    end
   end
+  source lib-$image_base.fish
 
   set -l cmd $argv[1]
   if contains "$cmd" create start start-worker smoke-test list controller-ip delete version

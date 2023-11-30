@@ -1,5 +1,4 @@
 # Global constants
-set kubdee_base_image images:ubuntu/jammy
 set incus_status_code_running 103
 set incus_driver_version (incus info | awk '/[:space:]*driver_version/ {print $2}')
 
@@ -142,26 +141,10 @@ function prepare_container_image
   incus image info $kubdee_container_image &>/dev/null ; and return
   log_info "Preparing kubdee container image ..."
   incus delete -f $kubdee_container_image-setup &>/dev/null ; or true
-  incus launch \
-    --storage kubdee \
-    --profile default \
-    $kubdee_base_image $kubdee_container_image-setup
-  container_wait_running $kubdee_container_image-setup
-  begin
-    echo "
-set -euo pipefail
-
-export DEBIAN_FRONTEND=noninteractive
-apt-get update
-
-apt-get install -y curl
-
-rm -rf /var/cache/apt
-  " | incus exec $kubdee_container_image-setup -- bash
-    incus snapshot create $kubdee_container_image-setup snap
-    incus publish $kubdee_container_image-setup/snap --alias $kubdee_container_image
-    incus delete -f $kubdee_container_image-setup
-  end &>/dev/null
+  launch_container_image_setup $argv
+  incus snapshot create $kubdee_container_image-setup snap
+  incus publish $kubdee_container_image-setup/snap --alias $kubdee_container_image
+  incus delete -f $kubdee_container_image-setup
 end
 
 function launch_container 
@@ -201,14 +184,7 @@ function configure_controller
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
   container_wait_running $container_name
-  begin
-    incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
-    incus exec $container_name -- chmod a+x /usr/local/bin/k3s
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/kubectl
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/ctr
-    incus exec $container_name -- ln -s /usr/local/bin/k3s /usr/local/bin/crictl
-    incus exec $container_name -- sh -ic 'k3s server --write-kubeconfig-mode 644 &' # -i force interactive mode, otherwise the process to start server is interrupted.
-  end # &>/dev/null # fail to start k3s server if output are closed.
+  configure_controller_impl $argv
   or exit_error "Faild to start k3s server on $container_name. " 1
   controller_wait_running $container_name
   import_local_images $container_name
@@ -218,16 +194,7 @@ function configure_worker
   set -l cluster_name $argv[1]
   set -l container_name $argv[2]
   container_wait_running $container_name
-  begin
-    incus config device add $container_name k3s-binary disk source=$kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin/k3s path=/usr/local/bin/k3s
-  end &> /dev/null
-  set -l controller_name kubdee-$cluster_name-controller
-  set -l token (incus exec $controller_name -- cat /var/lib/rancher/k3s/server/node-token)
-  or exit_error "k3s server token not found on $controller_name. Dose the server run?" 1
-  set -l server_ip4 (container_ipv4_address $controller_name)
-  begin
-      incus exec $container_name -- k3s agent --server https://$server_ip4:6443 --token $token &
-  end &>/dev/null
+  configure_worker_impl $argv
   or exit_error "Faild to start k3s agent on $container_name. " 1
   import_local_images $container_name
 end
