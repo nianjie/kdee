@@ -6,7 +6,7 @@ set kubdee_version (git describe --tags --always --dirty)
 set kubdee_version dev
 set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
-set image_bases ubuntu alpine
+set image_bases alpine ubuntu
 set image_base $image_bases[1]
 # Option defaults
 set k3s_version v1.28.3+k3s1
