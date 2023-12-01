@@ -12,6 +12,12 @@
 
 ## Usage
 
+### Notice on environment where default alpine repository is not reachable
+* The `profiles/apk-repo-mirrors.profile.yaml` contains apk package repository mirrors configuration. Import this file as the default profile because containers are launched against the default profile.
+  * In order not to replace current default profile, create a separate project with `features.profiles` enabled on incus would be better.
+  * The mirror is http://mirrors.tuna.tsinghua.edu.cn/alpine/. You could select your favorite one from the mirrors list:
+    * https://mirrors.alpinelinux.org/
+
 
 ## Release Notes
 * v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
@@ -22,3 +28,4 @@
 * v0.5 - Implemented feature of supporting local k3s binary specification. This will be helpful in case of being unable to download k3s online. 
   * As the k3s binary will be cached in local, no need to specify local option again from next run.
 * v0.6 - Implement selection of base image between ubuntu, alpine.
+  * The default is alpine.
