@@ -176,7 +176,7 @@ function import_local_images
   begin
     set tars (incus exec $container_name -- sh -c 'ls /data/*.tar')
     for t in $tars
-      incus exec $container_name -- k3s ctr image import $t
+      incus exec $container_name -- ctr image import $t
     end
   end &>/dev/null
 end

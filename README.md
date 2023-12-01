@@ -18,6 +18,16 @@
   * The mirror is http://mirrors.tuna.tsinghua.edu.cn/alpine/. You could select your favorite one from the mirrors list:
     * https://mirrors.alpinelinux.org/
 
+### Notice on `images-repo` volume
+* Create the volume
+```sh
+$ incus storage volume create [cluster-name] images-repo
+```
+* Prepare image archives
+```sh
+# $STORAGE_POOL_LOCATION stands for storage pools location, default location is /var/lib/incus/storage-pools
+$ cp my-container-images.tar $STORAGE_POOL_LOCATION/[cluster-name]/custom/default_images-repo
+``` 
 
 ## Release Notes
 * v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
