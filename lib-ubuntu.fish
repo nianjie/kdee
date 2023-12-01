@@ -1,6 +1,32 @@
 # Global constants
 set -g kubdee_base_image images:ubuntu/jammy #require explicit global option, as being sourced within a function(main) body.
 
+function fetch_k3s
+  set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
+  mkdir -p $cache_dir
+  test -e $cache_dir/k3s ; and return
+  begin
+    cd_or_exit_error $cache_dir
+    log_info "Fetching k3s $k3s_version ..."
+    if ! curl -fsSLI "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s" >/dev/null
+      exit_error "K3s version '$k3s_version' not found on https://github.com/k3s-io" 1
+    end
+    curl -fsSL -o k3s "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s"
+    chmod a+x k3s
+  end
+end
+
+function fetch_k3s_binaries_impl
+  set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
+  set -l cluster_name $argv[1]
+  set -l local_k3s_binary $argv[2]
+  test -n $local_k3s_binary ; and copyl_or_exit_error $cache_dir $local_k3s_binary
+  fetch_k3s
+  set -l target_dir $kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin
+  mkdir -p $target_dir
+  copyl_or_exit_error $target_dir $cache_dir/k3s
+end
+
 function launch_container_image_setup
   set -l cluster_name $argv[1]
   incus launch \

@@ -1,6 +1,10 @@
 # Global constants
 set -g kubdee_base_image 'images:alpine/3.18/cloud' # require explicit global option as is sourced within a function body.
 
+function fetch_k3s_binaries_impl
+  # k3s package available from apk repository. no need to fetch manually.
+end
+
 function launch_container_image_setup
   set -l cluster_name $argv[1]
   incus launch \
