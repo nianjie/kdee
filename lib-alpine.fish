@@ -1,5 +1,5 @@
 # Global constants
-set -g kubdee_base_image 'images:alpine/3.18' # require explicit global option as is sourced within a function body.
+set -g kubdee_base_image 'images:alpine/3.18/cloud' # require explicit global option as is sourced within a function body.
 
 function launch_container_image_setup
   set -l cluster_name $argv[1]
