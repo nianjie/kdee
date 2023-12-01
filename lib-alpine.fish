@@ -10,6 +10,7 @@ function launch_container_image_setup
   container_wait_running $kubdee_container_image-setup
   begin
     echo "
+    apk update
     apk add k3s
   " | incus exec $kubdee_container_image-setup -- ash
   end &>/dev/null
