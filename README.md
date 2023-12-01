@@ -13,7 +13,7 @@
 ## Usage
 
 ### Notice on environment where default alpine repository is not reachable
-* The `profiles/apk-repo-mirrors.profile.yaml` contains apk package repository mirrors configuration. Import this file as the default profile because containers are launched against the default profile.
+* The `profiles/apk-repo-mirrors.profile.yaml` contains apk package repository mirrors configuration. Import this file as the default profile because the profile used to launch containers are supposed to be the default one.
   * In order not to replace current default profile, create a separate project with `features.profiles` enabled on incus would be better.
   * The mirror is http://mirrors.tuna.tsinghua.edu.cn/alpine/. You could select your favorite one from the mirrors list:
     * https://mirrors.alpinelinux.org/
