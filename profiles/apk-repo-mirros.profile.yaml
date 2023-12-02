@@ -1,0 +1,19 @@
+name: Default Incus profile
+description: provide clout-init user data profile for alpine
+config:
+  cloud-init.user-data: |
+    #cloud-config
+    apk_repos:
+      alpine_repo:
+        base_url: http://mirrors.tuna.tsinghua.edu.cn/alpine
+        community_enabled: true
+        version: v3.18
+devices:
+  eth0:
+    name: eth0
+    network: incusbr0
+    type: nic
+  root:
+    path: /
+    pool: default
+    type: disk
