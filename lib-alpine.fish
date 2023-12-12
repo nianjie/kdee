@@ -17,6 +17,17 @@ function launch_container_image_setup
     apk update
     apk add k3s
   " | incus exec $kubdee_container_image-setup -- ash
+  incus exec $kubdee_container_image-setup -- mkdir -p /var/lib/rancher/k3s/server/manifests
+  incus exec $kubdee_container_image-setup -- sh -c "echo 'apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    globalArguments: []
+' > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml #customize traefik
+"
   end &>/dev/null
 end
 
