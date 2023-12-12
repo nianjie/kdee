@@ -26,6 +26,13 @@ metadata:
 spec:
   valuesContent: |-
     globalArguments: []
+    additionalArguments: [\"--entrypoints.rethinkdb.address=:28015/tcp\"]
+    ports:
+      rethinkdb:
+        port: 28015
+        expose: true
+        exposedPort: 28015
+        protocol: TCP
 ' > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml #customize traefik
 "
   end &>/dev/null
