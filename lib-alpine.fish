@@ -17,6 +17,7 @@ function launch_container_image_setup
     apk update
     apk add k3s
   " | incus exec $kubdee_container_image-setup -- ash
+  #customize traefik
   incus exec $kubdee_container_image-setup -- mkdir -p /var/lib/rancher/k3s/server/manifests
   incus exec $kubdee_container_image-setup -- sh -c "echo 'apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
@@ -26,14 +27,11 @@ metadata:
 spec:
   valuesContent: |-
     globalArguments: []
-    additionalArguments: [\"--entrypoints.rethinkdb.address=:28015/tcp\"]
     ports:
       rethinkdb:
         port: 28015
         expose: true
-        exposedPort: 28015
-        protocol: TCP
-' > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml #customize traefik
+' > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
 "
   end &>/dev/null
 end
