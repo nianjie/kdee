@@ -28,6 +28,12 @@ $ incus storage volume create [cluster-name] images-repo
 # $STORAGE_POOL_LOCATION stands for storage pools location, default location is /var/lib/incus/storage-pools
 $ cp my-container-images.tar $STORAGE_POOL_LOCATION/[cluster-name]/custom/default_images-repo
 ``` 
+### Notice on `k3s-pv` volume
+This volume is prepared for provision of local persistent volume for k8s containers. It is attached at `/mnt/disks/ssd1` on each k8s node.
+* Create the volume
+```sh
+$ incus storage volume create [cluster-name] k3s-pv
+```
 
 ## Release Notes
 * v0.1 - Implemented basic commands, including `create`, `start`, `start-worker`, `up`, and `delete`.
