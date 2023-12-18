@@ -45,3 +45,4 @@ $ incus storage volume create [cluster-name] k3s-pv
   * As the k3s binary will be cached in local, no need to specify local option again from next run.
 * v0.6 - Implement selection of base image between ubuntu, alpine.
   * The default is alpine.
+* v0.7 - Customize one of k3s packaged components(i.e. traefik), as well do some tweaks on openrc services of alpine.

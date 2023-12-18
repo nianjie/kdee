@@ -15,7 +15,15 @@ function launch_container_image_setup
   begin
     echo "
     apk update
-    apk add k3s
+    apk upgrade
+    apk add --nocache k3s
+    rm -rf /var/cache/apk/*
+    rc-update delete cloud-config -a
+    rc-update delete cloud-final -a
+    rc-update delete cloud-config -a
+    rc-update delete cloud-init -a
+    rc-update delete cloud-init-local -a
+    rc-update delete crond -a
   " | incus exec $kubdee_container_image-setup -- ash
   #customize traefik
   incus exec $kubdee_container_image-setup -- mkdir -p /var/lib/rancher/k3s/server/manifests
