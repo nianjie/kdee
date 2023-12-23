@@ -49,3 +49,4 @@ $ incus storage volume create [cluster-name] k3s-pv
 * v0.7.1 - Change local container images repo location from incus volume to path on the incus server. 
   * The reason is it gets easy to share by path on the host than volume, the latter requiring privilege.
   * The catch is only path on the server can be shared. so if runs incus from remote, the path is fixed to `/home/ubuntu/$share_dir/images-repo`.
+* v0.8 - Implement network forwards feature. With this option enabled, k8s services are reachable via a specified static ip address, which may be outside the incus network.

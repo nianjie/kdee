@@ -8,6 +8,7 @@ set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 set image_bases alpine ubuntu
 set image_base $image_bases[1]
+set ip_forwarding
 if test local = (incus remote get-default)
   set container_image_share_directory $kubdee_dir/images-repo
   command mkdir -p $container_image_share_directory
@@ -43,6 +44,7 @@ function exit_usage
     --no-set-context                                  prevent curent `.kube/config` from being replaced
     --local-k3s-binary <path>                         install with specified k3s binary instead of fetching from internet (sort of offline)
     --image-base                                      specify base image. possible options are : "(string join ', ' $image_bases)". default is `$image_bases[1]`.
+    --forwarding <ip address>                         specify an ip address on which incus listen on for servcies requesting to incus instances
     --help                                            print this information
   "
     exit 0
@@ -139,7 +141,7 @@ function cmd_delete
 end
 
 function main
-  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= i/image-base= -- $argv
+  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= i/image-base= f/forwarding= -- $argv
   or begin
       echo "See `kubdee --help` for help" >&2
       exit 1
@@ -175,6 +177,10 @@ function main
     end
   end
   source lib-$image_base.fish
+
+  if set -ql _flag_forwarding
+    set ip_forwarding $_flag_forwarding
+  end
 
   set -l cmd $argv[1]
   if contains "$cmd" create start start-worker smoke-test list controller-ip delete version
