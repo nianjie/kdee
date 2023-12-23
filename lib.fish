@@ -169,7 +169,7 @@ function configure_controller
   controller_wait_running $container_name
   import_local_images $container_name
   if test -n $ip_forwarding
-    set -l network (incus config show $container_name --expanded |fgrep -i network |string split -f 2 ':' --)
+    set -l network (incus config show $container_name --expanded |fgrep -i network |string split -f 2 ':' -- | string trim)
     if not contains $ip_forwarding (incus network forward list $network --format json |jq -r '.[].listen_address')
       incus network forward create $network $ip_forwarding
     end
