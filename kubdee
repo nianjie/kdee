@@ -8,7 +8,6 @@ set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 set image_bases alpine ubuntu
 set image_base $image_bases[1]
-set ip_forwarding
 if test local = (incus remote get-default)
   set container_image_share_directory $kubdee_dir/images-repo
   command mkdir -p $container_image_share_directory
@@ -36,6 +35,7 @@ function exit_usage
     $command_name [options] start <cluster name>             start a cluster
     $command_name [options] start-worker <cluster name>      start a new worker node in a cluster
     $command_name [options] up <cluster name>                create + start in one command
+    $command_name [options] forward <ip address> <cluster name> listen on the specified address to forward requests to cluster
     $command_name [options] version                          print kubdee version and exit
   
   Options:
@@ -44,7 +44,6 @@ function exit_usage
     --no-set-context                                  prevent curent `.kube/config` from being replaced
     --local-k3s-binary <path>                         install with specified k3s binary instead of fetching from internet (sort of offline)
     --image-base                                      specify base image. possible options are : "(string join ', ' $image_bases)". default is `$image_bases[1]`.
-    --forwarding <ip address>                         specify an ip address on which incus listen on for servcies requesting to incus instances
     --help                                            print this information
   "
     exit 0
@@ -140,8 +139,26 @@ function cmd_delete
   rm -rf $kubdee_dir/clusters/$cluster_name
 end
 
+function cmd_forward
+  set -l ip_forwarding $argv[1]
+  set -l cluster_name $argv[2]
+  test -z $cluster_name; and set cluster_name kubdee
+  set cluster_name (validate_name $cluster_name)
+  test -d $kubdee_dir/clusters/$cluster_name
+  or exit_error "Found no cluster with name: $cluster_name - did you create it?" 1
+  set -l container_name kubdee-$cluster_name-controller
+  if test -n "$ip_forwarding"
+    set -l network (incus list --format json |jq -r ".[] |select(.name==\"$container_name\").expanded_devices.eth0.network")
+    if not contains $ip_forwarding (incus network forward list $network --format json |jq -r '.[].listen_address')
+      incus network forward create $network $ip_forwarding
+    end
+    incus network forward set $network $ip_forwarding target_address=(container_ipv4_address $container_name)
+    log_info 'network forward completed.'
+  end
+end
+
 function main
-  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= i/image-base= f/forwarding= -- $argv
+  argparse h/help k/k3s-version= n/num-worker= u-no-set-context l/local-k3s-binary= i/image-base= -- $argv
   or begin
       echo "See `kubdee --help` for help" >&2
       exit 1
@@ -178,12 +195,8 @@ function main
   end
   source lib-$image_base.fish
 
-  if set -ql _flag_forwarding
-    set ip_forwarding $_flag_forwarding
-  end
-
   set -l cmd $argv[1]
-  if contains "$cmd" create start start-worker smoke-test list controller-ip delete version
+  if contains "$cmd" create start start-worker smoke-test list controller-ip delete version forward
     cmd_$cmd $argv[2..]
   else if test "$cmd" = up
     cmd_create $argv[2..]

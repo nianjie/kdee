@@ -168,13 +168,6 @@ function configure_controller
   or exit_error "Faild to start k3s server on $container_name. " 1
   controller_wait_running $container_name
   import_local_images $container_name
-  if test -n "$ip_forwarding"
-    set -l network (incus list --format json |jq -r ".[] |select(.name==\"$container_name\").expanded_devices.eth0.network")
-    if not contains $ip_forwarding (incus network forward list $network --format json |jq -r '.[].listen_address')
-      incus network forward create $network $ip_forwarding
-    end
-    incus network forward set $network $ip_forwarding target_address=(container_ipv4_address $container_name)
-  end
 end
 
 function configure_worker
