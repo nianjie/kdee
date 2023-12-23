@@ -8,6 +8,12 @@ set kubdee_cache_dir "$kubdee_dir/cache/$kubdee_version"
 set kubdee_container_image kubdee-container-image-(string replace -a -r [._] - -- $kubdee_version)
 set image_bases alpine ubuntu
 set image_base $image_bases[1]
+if test local = (incus remote get-default)
+  set container_image_share_directory $kubdee_dir/images-repo
+  command mkdir -p $container_image_share_directory
+else
+  set container_image_share_directory /home/ubuntu/.local/share/kubdee/images-repo
+end
 # Option defaults
 set k3s_version v1.28.3+k3s1
 set num_worker 2
@@ -50,7 +56,7 @@ function cmd_create
   and exit_error "Found existing cluster with name: $cluster_name" 1
   log_info "Creating cluster $cluster_name ..."
   fetch_k3s_binaries $cluster_name $local_k3s_binary
-  mkdir -p $kubdee_dir/clusters/$cluster_name
+  command mkdir -p $kubdee_dir/clusters/$cluster_name
   create_storage_pool $cluster_name
   prepare_container_image $cluster_name
   log_success "Cluster $cluster_name created."
@@ -104,7 +110,7 @@ function cmd_version
 end
 
 function cmd_list
-  mkdir -p "$kubdee_dir/clusters/"
+  command mkdir -p "$kubdee_dir/clusters/"
   find "$kubdee_dir/clusters/" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
 end
 

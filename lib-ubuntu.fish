@@ -3,7 +3,7 @@ set -g kubdee_base_image images:ubuntu/jammy #require explicit global option, as
 
 function fetch_k3s
   set -l cache_dir $kubdee_cache_dir/k3s/$k3s_version
-  mkdir -p $cache_dir
+  command mkdir -p $cache_dir
   test -e $cache_dir/k3s ; and return
   begin
     cd_or_exit_error $cache_dir
@@ -23,7 +23,7 @@ function fetch_k3s_binaries_impl
   test -n $local_k3s_binary ; and copyl_or_exit_error $cache_dir $local_k3s_binary
   fetch_k3s
   set -l target_dir $kubdee_dir/clusters/$cluster_name/rootfs/usr/local/bin
-  mkdir -p $target_dir
+  command mkdir -p $target_dir
   copyl_or_exit_error $target_dir $cache_dir/k3s
 end
 
