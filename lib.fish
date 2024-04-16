@@ -50,7 +50,7 @@ function validate_name
   # We must be fairly strict about names, since they are used
   # for container's hostname
   if ! echo "$orig_name" | grep -qE '^[[:alnum:]_.-]{1,50}$'
-    exit_error "Invalid name (only '[[:alnum:]-]{1,50}' allowed): $orig_name" 1
+    exit_error "Invalid cluster name (only '[[:alnum:]-]{1,50}' allowed): '$orig_name'" 1
   end
   # Do some normalization to allow input like 'v1.8.4' while
   # matching host name requirements
