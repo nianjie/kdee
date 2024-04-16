@@ -71,6 +71,7 @@ function cmd_start
   or exit_error "Found no cluster with name: $cluster_name - did you create it?" 1
   log_info "Starting cluster $cluster_name ..."
   launch_container $cluster_name kubdee-$cluster_name-controller
+  configure_controller $cluster_name kubdee-$cluster_name-controller
   set -l worker_suffixes
   for i in (seq $num_worker);
     set -a worker_suffixes (openssl rand -base64 10 | tr -cd 'a-z0-9' | head -c 6 || true)
@@ -78,7 +79,6 @@ function cmd_start
   for i in (seq $num_worker);
     launch_container $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
   end
-  configure_controller $cluster_name kubdee-$cluster_name-controller $admission_plugins
   for i in (seq $num_worker);
     configure_worker $cluster_name kubdee-$cluster_name-worker-$worker_suffixes[$i]
   end
